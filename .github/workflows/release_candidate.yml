@@ -38,7 +38,7 @@ jobs:
         run: pio run -e gh_release_rc
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Biscuit-RC-${{ env.BRANCH_SUFFIX }}
           path: |
