@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: false
     steps:
       - uses: actions/checkout@v6
         with:
@@ -37,8 +38,8 @@ jobs:
           CROSSPOINT_RC_HASH: ${{ env.SHORT_SHA }}
         run: pio run -e gh_release_rc
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v5
+      -      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
         with:
           name: Biscuit-RC-${{ env.BRANCH_SUFFIX }}
           path: |
@@ -47,3 +48,4 @@ jobs:
             .pio/build/gh_release_rc/firmware.elf
             .pio/build/gh_release_rc/firmware.map
             .pio/build/gh_release_rc/partitions.bin
+          overwrite: true
