@@ -4,35 +4,26 @@ on:
 jobs:
   build-release-candidate:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          version: "latest"
-          enable-cache: false
-      - name: Install PlatformIO Core
-        run: uv pip install --system -U https://github.com/pioarduino/platformio-core/archive/refs/tags/v6.1.19.zip
-      - name: Extract env
-        run: |
-          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
-          echo "BRANCH_SUFFIX=${GITHUB_REF_NAME}" >> $GITHUB_ENV
-      - name: Build Biscuit Release Candidate
-        env:
-          CROSSPOINT_RC_HASH: ${{ env.SHORT_SHA }}
+      - name: Install Python
+        run: sudo apt-get install -y python3 python3-pip
+      - name: Install PlatformIO
+        run: pip3 install -U https://github.com/pioarduino/platformio-core/archive/refs/tags/v6.1.19.zip
+      - name: Build
         run: pio run -e gh_release_rc
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Biscuit-RC-${{ env.BRANCH_SUFFIX }}
-          path: |
-            .pio/build/gh_release_rc/bootloader.bin
-            .pio/build/gh_release_rc/firmware.bin
-            .pio/build/gh_release_rc/partitions.bin
+      - name: Create Release
+        run: |
+          gh release create "biscuit-$(date +%Y%m%d-%H%M%S)" \
+            .pio/build/gh_release_rc/bootloader.bin \
+            .pio/build/gh_release_rc/firmware.bin \
+            .pio/build/gh_release_rc/partitions.bin \
+            --title "Biscuit RC Build" \
+            --notes "Automated build" \
+            --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
